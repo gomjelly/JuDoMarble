@@ -102,7 +102,6 @@ void MainWindow::onSimulate() {
 
 void MainWindow::onStopSimulation() {
     if (m_simWindow) {
-        m_simWindow->close();
         delete m_simWindow;
         m_simWindow = nullptr;
         statusBar()->showMessage("시뮬레이션 종료");

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JuDoMarble", "JuDoMarble.vcxproj", "{AEBB9520-A42F-4E8B-81D3-08CB6648660E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEBB9520-A42F-4E8B-81D3-08CB6648660E}.Debug|x64.ActiveCfg = Debug|x64
+		{AEBB9520-A42F-4E8B-81D3-08CB6648660E}.Debug|x64.Build.0 = Debug|x64
+		{AEBB9520-A42F-4E8B-81D3-08CB6648660E}.Release|x64.ActiveCfg = Release|x64
+		{AEBB9520-A42F-4E8B-81D3-08CB6648660E}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F9ECF299-5E6A-46E5-ACA7-DA2D88D2CC7D}
+	EndGlobalSection
+EndGlobal

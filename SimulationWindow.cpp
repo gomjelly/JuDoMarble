@@ -3,13 +3,16 @@
 #include <QPainter>
 #include <QKeyEvent>
 #include <QScreen>
+#include <QWindow>
 
 SimulationWindow::SimulationWindow(const QList<PolygonItem>& items, QScreen* screen, QWidget* parent)
     : QWidget(parent, Qt::Window | Qt::FramelessWindowHint), m_items(items)
 {
     setWindowTitle("JuDoMarble");
-    // Place on target screen, then go fullscreen
+    // Move to target screen first, then go fullscreen so Qt picks the right screen
     setGeometry(screen->geometry());
+    show();
+    windowHandle()->setScreen(screen);
     showFullScreen();
 }
 

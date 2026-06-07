@@ -1,0 +1,48 @@
+# Visual Studio build output
+x64/
+x86/
+Debug/
+Release/
+ipch/
+
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docview
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+.vs/
+
+# MSBuild intermediates
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.lib
+*.dll
+*.exe
+*.recipe
+*.log
+*.tlog
+
+# Qt generated files (moc/rcc/uic output — regenerated at build time)
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# Qt misc
+*.qmlc
+*.jsc
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+build/
