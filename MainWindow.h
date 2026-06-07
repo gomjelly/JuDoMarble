@@ -15,6 +15,8 @@ private slots:
     void onAddTriangle();
     void onSimulate();
     void onStopSimulation();
+    void onSave();
+    void onLoad();
 
 private:
     EditorCanvas* m_canvas{ nullptr };

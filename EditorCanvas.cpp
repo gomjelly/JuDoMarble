@@ -35,6 +35,18 @@ void EditorCanvas::addTriangle() {
     update();
 }
 
+void EditorCanvas::loadBoardState(bool hasBoard, const QPointF corners[4], const CellState states[kBoardTotal]) {
+    m_showBoard = hasBoard;
+    for (int i = 0; i < 4; ++i)        m_boardCorners[i] = corners[i];
+    for (int i = 0; i < kBoardTotal; ++i) m_cellStates[i] = states[i];
+    m_selectedIndex   = -1;
+    m_dragVertexIndex = -1;
+    m_dragBoardCorner = -1;
+    m_draggingPolygon = false;
+    update();
+    emit boardChanged();
+}
+
 void EditorCanvas::clearAll() {
     m_items.clear();
     m_showBoard = false;

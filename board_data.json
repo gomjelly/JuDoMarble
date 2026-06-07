@@ -1,0 +1,432 @@
+{
+  "board": {
+    "size": 8,
+    "totalSpaces": 32,
+    "cornerSize": 90,
+    "cellWidth": 64.3,
+    "layout": {
+      "side0": "right column  (BR → TR, going up)",
+      "side1": "top row       (TR → TL, going left)",
+      "side2": "left column   (TL → BL, going down)",
+      "side3": "bottom row    (BL → BR, going right)"
+    }
+  },
+  "spaces": [
+    {
+      "index": 0,
+      "name": "출발",
+      "type": "corner",
+      "subtype": "start",
+      "cornerPosition": "BR",
+      "side": 0,
+      "color": "#32A032",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 1,
+      "name": "방콕",
+      "type": "property",
+      "subtype": "city",
+      "side": 0,
+      "color": "#86D46A",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "에메랄드 사원",
+        "resource": "landmark_bangkok.png"
+      }
+    },
+    {
+      "index": 2,
+      "name": "보너스게임",
+      "type": "bonus",
+      "subtype": "bonus",
+      "side": 0,
+      "color": "#64D264",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 3,
+      "name": "베이징",
+      "type": "property",
+      "subtype": "city",
+      "side": 0,
+      "color": "#86D46A",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "자금성",
+        "resource": "landmark_beijing.png"
+      }
+    },
+    {
+      "index": 4,
+      "name": "독도",
+      "type": "property",
+      "subtype": "island",
+      "side": 0,
+      "color": "#ADD8E6",
+      "canBuild": true,
+      "buildings": ["깃발", "파라솔", "멋진 숙소"],
+      "landmark": null
+    },
+    {
+      "index": 5,
+      "name": "타이페이",
+      "type": "property",
+      "subtype": "city",
+      "side": 0,
+      "color": "#2EA043",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "101 타워",
+        "resource": "landmark_taipei.png"
+      }
+    },
+    {
+      "index": 6,
+      "name": "두바이",
+      "type": "property",
+      "subtype": "city",
+      "side": 0,
+      "color": "#2EA043",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "부르즈 알 아랍",
+        "resource": "landmark_dubai.png"
+      }
+    },
+    {
+      "index": 7,
+      "name": "카이로",
+      "type": "property",
+      "subtype": "city",
+      "side": 0,
+      "color": "#2EA043",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "스핑크스",
+        "resource": "landmark_cairo.png"
+      }
+    },
+    {
+      "index": 8,
+      "name": "무인도",
+      "type": "corner",
+      "subtype": "prison",
+      "cornerPosition": "TR",
+      "side": 1,
+      "color": "#E6C882",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 9,
+      "name": "발리",
+      "type": "property",
+      "subtype": "island",
+      "side": 1,
+      "color": "#FFDADA",
+      "canBuild": true,
+      "buildings": ["깃발", "파라솔", "멋진 숙소"],
+      "landmark": {
+        "name": "우붓 사원",
+        "resource": "landmark_bali.png"
+      }
+    },
+    {
+      "index": 10,
+      "name": "도쿄",
+      "type": "property",
+      "subtype": "city",
+      "side": 1,
+      "color": "#64B5F6",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "도쿄 타워",
+        "resource": "landmark_tokyo.png"
+      }
+    },
+    {
+      "index": 11,
+      "name": "시드니",
+      "type": "property",
+      "subtype": "city",
+      "side": 1,
+      "color": "#64B5F6",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "오페라 하우스",
+        "resource": "landmark_sydney.png"
+      }
+    },
+    {
+      "index": 12,
+      "name": "포춘카드",
+      "type": "fortune",
+      "subtype": "fortune",
+      "side": 1,
+      "color": "#FFD700",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 13,
+      "name": "퀘벡",
+      "type": "property",
+      "subtype": "city",
+      "side": 1,
+      "color": "#1E64C8",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "샤토 프롱트낙",
+        "resource": "landmark_quebec.png"
+      }
+    },
+    {
+      "index": 14,
+      "name": "하와이",
+      "type": "property",
+      "subtype": "island",
+      "side": 1,
+      "color": "#ADD8E6",
+      "canBuild": true,
+      "buildings": ["깃발", "파라솔", "멋진 숙소"],
+      "landmark": null
+    },
+    {
+      "index": 15,
+      "name": "상파울루",
+      "type": "property",
+      "subtype": "city",
+      "side": 1,
+      "color": "#1E64C8",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "성 바오로 대성당",
+        "resource": "landmark_saopaulo.png"
+      }
+    },
+    {
+      "index": 16,
+      "name": "올림픽",
+      "type": "corner",
+      "subtype": "olympics",
+      "cornerPosition": "TL",
+      "side": 2,
+      "color": "#F5F5F5",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 17,
+      "name": "프라하",
+      "type": "property",
+      "subtype": "city",
+      "side": 2,
+      "color": "#F06292",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "프라하 성",
+        "resource": "landmark_prague.png"
+      }
+    },
+    {
+      "index": 18,
+      "name": "푸켓",
+      "type": "property",
+      "subtype": "island",
+      "side": 2,
+      "color": "#ADD8E6",
+      "canBuild": true,
+      "buildings": ["깃발", "파라솔", "멋진 숙소"],
+      "landmark": null
+    },
+    {
+      "index": 19,
+      "name": "베를린",
+      "type": "property",
+      "subtype": "city",
+      "side": 2,
+      "color": "#F06292",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "브란덴부르크 문",
+        "resource": "landmark_berlin.png"
+      }
+    },
+    {
+      "index": 20,
+      "name": "포춘카드",
+      "type": "fortune",
+      "subtype": "fortune",
+      "side": 2,
+      "color": "#FFD700",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 21,
+      "name": "모스크바",
+      "type": "property",
+      "subtype": "city",
+      "side": 2,
+      "color": "#8E44AD",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "성 바실리 성당",
+        "resource": "landmark_moscow.png"
+      }
+    },
+    {
+      "index": 22,
+      "name": "제네바",
+      "type": "property",
+      "subtype": "city",
+      "side": 2,
+      "color": "#8E44AD",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "제트 도 (대분수)",
+        "resource": "landmark_geneva.png"
+      }
+    },
+    {
+      "index": 23,
+      "name": "로마",
+      "type": "property",
+      "subtype": "city",
+      "side": 2,
+      "color": "#8E44AD",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "콜로세움",
+        "resource": "landmark_rome.png"
+      }
+    },
+    {
+      "index": 24,
+      "name": "세계여행",
+      "type": "corner",
+      "subtype": "travel",
+      "cornerPosition": "BL",
+      "side": 3,
+      "color": "#1946AA",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 25,
+      "name": "타히티",
+      "type": "property",
+      "subtype": "island",
+      "side": 3,
+      "color": "#FFDADA",
+      "canBuild": true,
+      "buildings": ["깃발", "파라솔", "멋진 숙소"],
+      "landmark": {
+        "name": "수상 방갈로",
+        "resource": "landmark_tahiti.png"
+      }
+    },
+    {
+      "index": 26,
+      "name": "런던",
+      "type": "property",
+      "subtype": "city",
+      "side": 3,
+      "color": "#E67E22",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "빅 벤",
+        "resource": "landmark_london.png"
+      }
+    },
+    {
+      "index": 27,
+      "name": "파리",
+      "type": "property",
+      "subtype": "city",
+      "side": 3,
+      "color": "#E67E22",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "에펠탑",
+        "resource": "landmark_paris.png"
+      }
+    },
+    {
+      "index": 28,
+      "name": "포춘카드",
+      "type": "fortune",
+      "subtype": "fortune",
+      "side": 3,
+      "color": "#FFD700",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 29,
+      "name": "뉴욕",
+      "type": "property",
+      "subtype": "city",
+      "side": 3,
+      "color": "#D22828",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "자유의 여신상",
+        "resource": "landmark_newyork.png"
+      }
+    },
+    {
+      "index": 30,
+      "name": "국세청",
+      "type": "property",
+      "subtype": "tax",
+      "side": 3,
+      "color": "#3C3C3C",
+      "canBuild": false,
+      "buildings": null,
+      "landmark": null
+    },
+    {
+      "index": 31,
+      "name": "서울",
+      "type": "property",
+      "subtype": "city",
+      "side": 3,
+      "color": "#D22828",
+      "canBuild": true,
+      "buildings": ["깃발", "빌라", "빌딩", "호텔", "랜드마크"],
+      "landmark": {
+        "name": "63빌딩",
+        "resource": "landmark_seoul.png"
+      }
+    }
+  ]
+}

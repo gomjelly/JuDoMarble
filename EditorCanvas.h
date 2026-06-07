@@ -11,6 +11,7 @@ public:
     void addRectangle();
     void addTriangle();
     void clearAll();
+    void loadBoardState(bool hasBoard, const QPointF corners[4], const CellState states[kBoardTotal]);
 
     const QList<PolygonItem>& items()        const { return m_items; }
     bool                      hasBoard()      const { return m_showBoard; }

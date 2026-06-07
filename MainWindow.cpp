@@ -2,8 +2,10 @@
 #include "EditorCanvas.h"
 #include "SimulationWindow.h"
 #include "SoundManager.h"
+#include "GameSave.h"
 #include <QComboBox>
 #include <QDockWidget>
+#include <QFileDialog>
 #include <QGuiApplication>
 #include <QLabel>
 #include <QPushButton>
@@ -37,6 +39,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     layout->addWidget(btnClear);
 
     layout->addSpacing(12);
+    layout->addWidget(new QLabel("<b>세이브</b>"));
+    auto* btnSave = new QPushButton("💾  저장");
+    auto* btnLoad = new QPushButton("📂  불러오기");
+    layout->addWidget(btnSave);
+    layout->addWidget(btnLoad);
+
+    layout->addSpacing(12);
     layout->addWidget(new QLabel("<b>출력 디스플레이</b>"));
     m_displayCombo = new QComboBox;
     layout->addWidget(m_displayCombo);
@@ -60,6 +69,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(btnClear, &QPushButton::clicked, m_canvas, &EditorCanvas::clearAll);
     connect(btnSim,   &QPushButton::clicked, this, &MainWindow::onSimulate);
     connect(btnStop,  &QPushButton::clicked, this, &MainWindow::onStopSimulation);
+    connect(btnSave,  &QPushButton::clicked, this, &MainWindow::onSave);
+    connect(btnLoad,  &QPushButton::clicked, this, &MainWindow::onLoad);
 
     statusBar()->showMessage("준비  |  도형을 추가하고 꼭짓점을 드래그해 편집하세요");
 }
@@ -97,6 +108,24 @@ void MainWindow::onSimulate() {
     m_simWindow->show();
     SoundManager::instance().playSimulationStart();
     statusBar()->showMessage("시뮬레이션 실행 중  |  ESC로 종료");
+}
+
+void MainWindow::onSave() {
+    QString path = QFileDialog::getSaveFileName(
+        this, "게임 저장", "save.jdm",
+        "JuDoMarble 세이브 (*.jdm);;JSON (*.json);;모든 파일 (*)");
+    if (path.isEmpty()) return;
+    if (GameSave::save(path, m_canvas))
+        statusBar()->showMessage(QString("저장 완료: %1").arg(path));
+}
+
+void MainWindow::onLoad() {
+    QString path = QFileDialog::getOpenFileName(
+        this, "게임 불러오기", "",
+        "JuDoMarble 세이브 (*.jdm);;JSON (*.json);;모든 파일 (*)");
+    if (path.isEmpty()) return;
+    if (GameSave::load(path, m_canvas))
+        statusBar()->showMessage(QString("불러오기 완료: %1").arg(path));
 }
 
 void MainWindow::onStopSimulation() {
