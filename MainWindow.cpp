@@ -28,13 +28,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     layout->setSpacing(6);
     layout->setContentsMargins(8, 8, 8, 8);
 
-    layout->addWidget(new QLabel("<b>도형 추가</b>"));
+    layout->addWidget(new QLabel("<b>보드</b>"));
 
-    auto* btnRect  = new QPushButton("□  사각형");
-    auto* btnTri   = new QPushButton("△  삼각형");
+    auto* btnRect  = new QPushButton("⊞  보드 생성");
     auto* btnClear = new QPushButton("전체 삭제");
     layout->addWidget(btnRect);
-    layout->addWidget(btnTri);
     layout->addWidget(btnClear);
 
     layout->addSpacing(12);
@@ -58,7 +56,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 
     connect(btnRect,  &QPushButton::clicked, this, &MainWindow::onAddRectangle);
-    connect(btnTri,   &QPushButton::clicked, this, &MainWindow::onAddTriangle);
     connect(btnClear, &QPushButton::clicked, m_canvas, &EditorCanvas::clearAll);
     connect(btnSim,   &QPushButton::clicked, this, &MainWindow::onSimulate);
     connect(btnStop,  &QPushButton::clicked, this, &MainWindow::onStopSimulation);
@@ -81,7 +78,7 @@ void MainWindow::populateDisplayList() {
 
 void MainWindow::onAddRectangle() {
     m_canvas->addRectangle();
-    statusBar()->showMessage("사각형 추가됨");
+    statusBar()->showMessage("보드 생성됨");
 }
 
 void MainWindow::onAddTriangle() {
@@ -95,7 +92,7 @@ void MainWindow::onSimulate() {
     const auto screens = QGuiApplication::screens();
     if (idx < 0 || idx >= screens.size()) return;
 
-    m_simWindow = new SimulationWindow(m_canvas->items(), screens[idx]);
+    m_simWindow = new SimulationWindow(m_canvas, screens[idx]);
     m_simWindow->show();
     statusBar()->showMessage("시뮬레이션 실행 중  |  ESC로 종료");
 }

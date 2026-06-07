@@ -1,19 +1,23 @@
 #include "SimulationWindow.h"
 #include "EditorCanvas.h"
+#include "BoardData.h"
 #include <QPainter>
 #include <QKeyEvent>
 #include <QScreen>
 #include <QWindow>
 
-SimulationWindow::SimulationWindow(const QList<PolygonItem>& items, QScreen* screen, QWidget* parent)
-    : QWidget(parent, Qt::Window | Qt::FramelessWindowHint), m_items(items)
+SimulationWindow::SimulationWindow(EditorCanvas* canvas, QScreen* screen, QWidget* parent)
+    : QWidget(parent, Qt::Window | Qt::FramelessWindowHint)
+    , m_canvas(canvas)
 {
     setWindowTitle("JuDoMarble");
-    // Move to target screen first, then go fullscreen so Qt picks the right screen
     setGeometry(screen->geometry());
     show();
     windowHandle()->setScreen(screen);
     showFullScreen();
+
+    // Repaint whenever the editor canvas changes
+    connect(m_canvas, &EditorCanvas::boardChanged, this, QOverload<>::of(&QWidget::update));
 }
 
 void SimulationWindow::paintEvent(QPaintEvent*) {
@@ -21,13 +25,30 @@ void SimulationWindow::paintEvent(QPaintEvent*) {
     p.setRenderHint(QPainter::Antialiasing);
     p.fillRect(rect(), Qt::black);
 
-    QTransform t = QTransform::fromScale(
-        (qreal)width() / EditorCanvas::CANVAS_W,
+    QTransform canvasToScreen = QTransform::fromScale(
+        (qreal)width()  / EditorCanvas::CANVAS_W,
         (qreal)height() / EditorCanvas::CANVAS_H
     );
 
-    for (const auto& item : m_items) {
-        QPolygonF poly = t.map(item.polygon);
+    if (m_canvas->hasBoard()) {
+        const qreal bs = kBoardSize;
+        QPolygonF src, dst;
+        src << QPointF(0,0) << QPointF(bs,0) << QPointF(bs,bs) << QPointF(0,bs);
+        const QPointF* corners = m_canvas->boardCorners();
+        for (int ci = 0; ci < 4; ++ci) dst << canvasToScreen.map(corners[ci]);
+        QTransform boardT;
+        if (QTransform::quadToQuad(src, dst, boardT)) {
+            p.save();
+            p.setTransform(boardT);
+            EditorCanvas::drawBoard(p, m_canvas->cellStates());
+            EditorCanvas::drawBuildings(p, m_canvas->cellStates());
+            p.restore();
+        }
+    }
+
+    QTransform ctw = canvasToScreen;
+    for (const auto& item : m_canvas->items()) {
+        QPolygonF poly = ctw.map(item.polygon);
         p.setBrush(item.color);
         p.setPen(QPen(Qt::white, 2));
         p.drawPolygon(poly);

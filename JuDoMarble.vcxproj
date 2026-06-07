@@ -92,6 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BuildingDialog.cpp" />
     <ClCompile Include="EditorCanvas.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
@@ -107,7 +108,9 @@
     <QtMoc Include="MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoardData.h" />
     <ClInclude Include="PolygonItem.h" />
+    <QtMoc Include="BuildingDialog.h" />
     <QtMoc Include="SimulationWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

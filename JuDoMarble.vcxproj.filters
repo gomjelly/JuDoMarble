@@ -28,6 +28,9 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BuildingDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -53,8 +56,14 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoardData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="PolygonItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <QtMoc Include="BuildingDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>
