@@ -470,9 +470,112 @@ static const QColor kPlayerColors[4] = {
     {220, 20, 60}, {30,100,200}, {50,160, 50}, {230,190,  0},
 };
 
-// ── Landmark drawings (slot 4) ─────────────────────────────────────────────
-// cx,cy = painter origin offset; s = size unit (~19px for normal cell)
-static void drawLandmarkIcon(QPainter& p, qreal cx, qreal cy, qreal s, int spaceIdx, QColor col) {
+// ── Sprite sheet ──────────────────────────────────────────────────────────────
+// Grid: 6 cols × 4 rows, each cell 256×256
+// Row 0: 깃발(0) 파라솔(1) 멋진숙소(2) 빌라(3) 빌딩(4) 호텔(5)
+// Row 1: 방콕(0) 베이징(1) 타이페이(2) 두바이(3) 카이로(4) 도쿄(5)
+// Row 2: 시드니(0) 퀘벡(1) 상파울루(2) 프라하(3) 베를린(4) 모스크바(5)
+// Row 3: 제네바(0) 로마(1) 런던(2) 파리(3) 뉴욕(4) 서울(5)
+
+// playerColor 0=빨강 1=파랑 2=초록 3=노랑
+// Alpha 채널 보존을 위해 QImage::Format_ARGB32로 강제 변환 후 로드
+// 밝은 회색/흰색(체커보드 배경) 픽셀을 투명으로 제거
+static QPixmap loadSheet(const char* path) {
+    QImage img(path);
+    if (img.isNull()) return {};
+    QImage result = img.convertToFormat(QImage::Format_ARGB32);
+
+    for (int y = 0; y < result.height(); ++y) {
+        QRgb* line = reinterpret_cast<QRgb*>(result.scanLine(y));
+        for (int x = 0; x < result.width(); ++x) {
+            int r = qRed(line[x]), g = qGreen(line[x]), b = qBlue(line[x]);
+            // 흰색 배경 + 안티앨리어싱 노이즈 → 투명 처리
+            if (r >= 230 && g >= 230 && b >= 230)
+                line[x] = qRgba(0, 0, 0, 0);
+        }
+    }
+    return QPixmap::fromImage(result);
+}
+
+static const QPixmap& spriteSheet(int playerColor) {
+    static QPixmap px[4] = {
+        loadSheet(":/resource/Generated_Image_red.png"),
+        loadSheet(":/resource/Generated_Image_blue.png"),
+        loadSheet(":/resource/Generated_Image_green.png"),
+        loadSheet(":/resource/Generated_Image_yellow.png"),
+    };
+    return (playerColor >= 0 && playerColor < 4) ? px[playerColor] : px[0];
+}
+
+// 셀 크기를 이미지에서 동적으로 계산 (6×4 그리드)
+static QRect spriteCell(const QPixmap& sheet, int col, int row) {
+    int cw = sheet.width()  / 6;
+    int ch = sheet.height() / 4;
+    return QRect(col * cw, row * ch, cw, ch);
+}
+
+// 투명 배경 유지하며 스프라이트 셀 그리기
+static void drawSprite(QPainter& p, int col, int row, const QRectF& dst, int playerColor) {
+    const QPixmap& sheet = spriteSheet(playerColor);
+    if (sheet.isNull()) return;
+    QRect src = spriteCell(sheet, col, row);
+    p.drawPixmap(dst, sheet, QRectF(src));
+}
+
+// Landmark sprite mapping: kLandmarkSprite[spaceIdx] = {col, row}, {-1,-1} = no sprite
+static const int kLandmarkSprite[32][2] = {
+    {-1,-1}, // 0  출발
+    { 0, 1}, // 1  방콕
+    {-1,-1}, // 2  보너스
+    { 1, 1}, // 3  베이징
+    {-1,-1}, // 4  독도 (섬)
+    { 2, 1}, // 5  타이페이
+    { 3, 1}, // 6  두바이
+    { 4, 1}, // 7  카이로
+    {-1,-1}, // 8  무인도
+    {-1,-1}, // 9  발리 (섬)
+    { 5, 1}, // 10 도쿄
+    { 0, 2}, // 11 시드니
+    {-1,-1}, // 12 포춘카드
+    { 1, 2}, // 13 퀘벡
+    {-1,-1}, // 14 하와이 (섬)
+    { 2, 2}, // 15 상파울루
+    {-1,-1}, // 16 올림픽
+    { 3, 2}, // 17 프라하
+    {-1,-1}, // 18 푸켓 (섬)
+    { 4, 2}, // 19 베를린
+    {-1,-1}, // 20 포춘카드
+    { 5, 2}, // 21 모스크바
+    { 0, 3}, // 22 제네바
+    { 1, 3}, // 23 로마
+    {-1,-1}, // 24 세계여행
+    {-1,-1}, // 25 타히티 (섬)
+    { 2, 3}, // 26 런던
+    { 3, 3}, // 27 파리
+    {-1,-1}, // 28 포춘카드
+    { 4, 3}, // 29 뉴욕
+    {-1,-1}, // 30 국세청
+    { 5, 3}, // 31 서울
+};
+
+// ── Shared: icon dst rect centered slightly above cell center ─────────────────
+static QRectF iconDst(const QRectF& local, qreal fillRatio = 0.82) {
+    qreal sz = qMin(local.width(), local.height()) * fillRatio;
+    return QRectF(-sz * 0.5, -local.height() * 0.44, sz, sz);
+}
+
+// ── Landmark drawings (slot 4) — sprite first, QPainter fallback ──────────────
+static void drawLandmarkIcon(QPainter& p, qreal cx, qreal cy, qreal s, int spaceIdx, QColor col, int playerColor = -1) {
+    // Try sprite first
+    if (spaceIdx >= 0 && spaceIdx < 32) {
+        int sc = kLandmarkSprite[spaceIdx][0], sr = kLandmarkSprite[spaceIdx][1];
+        if (sc >= 0) {
+            QRectF dst(cx - s * 1.1, cy - s * 2.2, s * 2.2, s * 2.2);
+            drawSprite(p, sc, sr, dst, playerColor);
+            return;
+        }
+    }
+    // QPainter fallback (islands etc.) ───────────────────────────────────────
     p.setPen(QPen(col.darker(140), 1.2));
     p.setBrush(col.lighter(150));
     switch (spaceIdx) {
@@ -746,80 +849,66 @@ static void drawLandmarkIcon(QPainter& p, qreal cx, qreal cy, qreal s, int space
     }
 }
 
-// Draws a single building icon. Painter is already translated to cell center + rotated.
-// local = rect in that rotated space. spaceIdx needed for landmark variant.
-static void paintBuildingIcon(QPainter& p, const QRectF& local, int buildingIdx, bool island, QColor col, int spaceIdx = -1) {
-    const qreal s  = qMin(local.width(), local.height()) * 0.30;
-    const qreal cx = 0, cy = -local.height() * 0.15;
+// Draws a single building icon — sprite first, QPainter fallback.
+// Painter is already translated to cell center + rotated.
+static void paintBuildingIcon(QPainter& p, const QRectF& local, int buildingIdx, bool island, QColor col, int spaceIdx = -1, int playerColor = -1) {
+    QRectF dst = iconDst(local);
+    const bool hasSheet = !spriteSheet(playerColor).isNull();
 
+    if (hasSheet) {
+        if (buildingIdx == 4) {
+            qreal ls = qMin(local.width(), local.height()) * 0.46;
+            drawLandmarkIcon(p, 0, -local.height() * 0.15, ls, spaceIdx, col, playerColor);
+            return;
+        }
+        int sprCol = -1;
+        if      (buildingIdx == 0)            sprCol = 0; // 깃발
+        else if (buildingIdx == 1 && island)  sprCol = 1; // 파라솔
+        else if (buildingIdx == 1 && !island) sprCol = 3; // 빌라
+        else if (buildingIdx == 2 && island)  sprCol = 2; // 멋진숙소
+        else if (buildingIdx == 2 && !island) sprCol = 4; // 빌딩
+        else if (buildingIdx == 3)            sprCol = 5; // 호텔
+        if (sprCol >= 0) { drawSprite(p, sprCol, 0, dst, playerColor); return; }
+    }
+
+    // QPainter fallback ────────────────────────────────────────────
+    const qreal s = qMin(local.width(), local.height()) * 0.30;
+    const qreal cx = 0, cy = -local.height() * 0.15;
     p.setPen(QPen(col.darker(130), 1.2));
     p.setBrush(col.lighter(160));
-
     switch (buildingIdx) {
-    case 0: { // 깃발
+    case 0: {
         p.setBrush(col);
-        p.drawLine(QPointF(cx, cy+s*.1), QPointF(cx, cy+s*1.6));
+        p.drawLine(QPointF(cx,cy+s*.1),QPointF(cx,cy+s*1.6));
         QPolygonF f; f<<QPointF(cx,cy+s*.1)<<QPointF(cx+s*.9,cy+s*.55)<<QPointF(cx,cy+s);
-        p.drawPolygon(f);
-        break;
+        p.drawPolygon(f); break;
     }
     case 1: {
-        if (island) { // 파라솔
-            p.setBrush(col.lighter(150));
-            p.drawEllipse(QPointF(cx,cy-s*.2), s, s*.45);
-            p.drawLine(QPointF(cx,cy-s*.2), QPointF(cx+s*.4,cy+s));
-        } else { // 빌라
-            p.drawRect(QRectF(cx-s*.6,cy-s*.2,s*1.2,s));
-            QPolygonF r; r<<QPointF(cx-s*.75,cy-s*.2)<<QPointF(cx,cy-s)<<QPointF(cx+s*.75,cy-s*.2);
-            p.drawPolygon(r);
-        }
+        if (island) { p.setBrush(col.lighter(150)); p.drawEllipse(QPointF(cx,cy-s*.2),s,s*.45); p.drawLine(QPointF(cx,cy-s*.2),QPointF(cx+s*.4,cy+s)); }
+        else { p.drawRect(QRectF(cx-s*.6,cy-s*.2,s*1.2,s)); QPolygonF r; r<<QPointF(cx-s*.75,cy-s*.2)<<QPointF(cx,cy-s)<<QPointF(cx+s*.75,cy-s*.2); p.drawPolygon(r); }
         break;
     }
     case 2: {
-        if (island) { // 멋진 숙소
-            p.drawRect(QRectF(cx-s*.55,cy-s*.1,s*1.1,s*.8));
-            QPolygonF r; r<<QPointF(cx-s*.65,cy-s*.1)<<QPointF(cx,cy-s*.85)<<QPointF(cx+s*.65,cy-s*.1);
-            p.drawPolygon(r);
-        } else { // 빌딩
-            p.drawRect(QRectF(cx-s*.4,cy-s,s*.8,s*1.3));
-            p.setPen(QPen(col.darker(150),.6));
-            for (int row=0;row<3;++row)
-                for (int c2=0;c2<2;++c2)
-                    p.drawRect(QRectF(cx-s*.28+c2*s*.32,cy-s*.85+row*s*.35,s*.18,s*.18));
-        }
+        if (island) { p.drawRect(QRectF(cx-s*.55,cy-s*.1,s*1.1,s*.8)); QPolygonF r; r<<QPointF(cx-s*.65,cy-s*.1)<<QPointF(cx,cy-s*.85)<<QPointF(cx+s*.65,cy-s*.1); p.drawPolygon(r); }
+        else { p.drawRect(QRectF(cx-s*.4,cy-s,s*.8,s*1.3)); p.setPen(QPen(col.darker(150),.6)); for(int row=0;row<3;++row) for(int c2=0;c2<2;++c2) p.drawRect(QRectF(cx-s*.28+c2*s*.32,cy-s*.85+row*s*.35,s*.18,s*.18)); }
         break;
     }
-    case 3: { // 호텔
-        // 건물 본체
-        p.setBrush(col.lighter(138)); p.setPen(QPen(col.darker(138), 1));
-        p.drawRect(QRectF(cx-s*.82, cy-s*.95, s*1.64, s*1.72));
-        // 옥상 난간
-        p.fillRect(QRectF(cx-s*.88, cy-s*1.0, s*1.76, s*.1), col.darker(125));
-        // 창문 3×3
+    case 3: {
+        p.setBrush(col.lighter(138)); p.setPen(QPen(col.darker(138),1));
+        p.drawRect(QRectF(cx-s*.82,cy-s*.95,s*1.64,s*1.72));
+        p.fillRect(QRectF(cx-s*.88,cy-s*1.0,s*1.76,s*.1),col.darker(125));
         p.setBrush(QColor(200,230,255,180)); p.setPen(QPen(col.darker(155),.5));
-        for (int row=0;row<3;++row)
-            for (int c2=0;c2<3;++c2)
-                p.drawRect(QRectF(cx-s*.62+c2*s*.48, cy-s*.82+row*s*.5, s*.26, s*.32));
-        // 입구 캐노피
+        for(int row=0;row<3;++row) for(int c2=0;c2<3;++c2) p.drawRect(QRectF(cx-s*.62+c2*s*.48,cy-s*.82+row*s*.5,s*.26,s*.32));
         p.setBrush(col.darker(108)); p.setPen(QPen(col.darker(145),1));
-        QPolygonF aw; aw<<QPointF(cx-s*.42,cy+s*.58)<<QPointF(cx,cy+s*.32)<<QPointF(cx+s*.42,cy+s*.58);
-        p.drawPolygon(aw);
-        // 기둥 2개
-        p.setBrush(col.lighter(155)); p.setPen(QPen(col.darker(135),1));
-        p.drawRect(QRectF(cx-s*.38, cy+s*.38, s*.1, s*.38));
-        p.drawRect(QRectF(cx+s*.28, cy+s*.38, s*.1, s*.38));
-        // 문
-        p.setBrush(QColor(40,20,5)); p.setPen(Qt::NoPen);
-        p.drawRect(QRectF(cx-s*.13, cy+s*.42, s*.26, s*.34));
-        // 간판
+        QPolygonF aw; aw<<QPointF(cx-s*.42,cy+s*.58)<<QPointF(cx,cy+s*.32)<<QPointF(cx+s*.42,cy+s*.58); p.drawPolygon(aw);
         p.setBrush(QColor(255,215,0)); p.setPen(QPen(QColor(160,120,0),1));
-        p.drawRect(QRectF(cx-s*.52, cy-s*1.14, s*1.04, s*.2));
+        p.drawRect(QRectF(cx-s*.52,cy-s*1.14,s*1.04,s*.2));
         QFont f; f.setPixelSize(qMax(5.0,s*.16)); f.setBold(true);
         p.setFont(f); p.setPen(QColor(120,70,0));
-        p.drawText(QRectF(cx-s*.52, cy-s*1.14, s*1.04, s*.2), Qt::AlignCenter, "HOTEL");
+        p.drawText(QRectF(cx-s*.52,cy-s*1.14,s*1.04,s*.2),Qt::AlignCenter,"HOTEL");
         break;
     }
-    case 4: { // 랜드마크 — 셀 가득 채우도록 큰 스케일
+    case 4: {
         qreal ls = qMin(local.width(), local.height()) * 0.46;
         drawLandmarkIcon(p, cx, cy, ls, spaceIdx, col);
         break;
@@ -881,7 +970,7 @@ void EditorCanvas::drawBuildings(QPainter& p, const CellState* states) {
             p.scale(sub.sc, sub.sc);
             qreal inv = 1.0 / sub.sc;
             QRectF subLocal(local.left()*inv, local.top()*inv, local.width()*inv, local.height()*inv);
-            paintBuildingIcon(p, subLocal, slot, isIslandCell(i), col, i);
+            paintBuildingIcon(p, subLocal, slot, isIslandCell(i), col, i, cs.playerColor);
             p.restore();
         }
 
