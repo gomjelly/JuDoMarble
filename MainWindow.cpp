@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "EditorCanvas.h"
 #include "SimulationWindow.h"
+#include "SoundManager.h"
 #include <QComboBox>
 #include <QDockWidget>
 #include <QGuiApplication>
@@ -94,6 +95,7 @@ void MainWindow::onSimulate() {
 
     m_simWindow = new SimulationWindow(m_canvas, screens[idx]);
     m_simWindow->show();
+    SoundManager::instance().playSimulationStart();
     statusBar()->showMessage("시뮬레이션 실행 중  |  ESC로 종료");
 }
 

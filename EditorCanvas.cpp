@@ -1,5 +1,6 @@
 #include "EditorCanvas.h"
 #include "BoardData.h"
+#include "SoundManager.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
@@ -162,10 +163,14 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
             for (int i = 0; i < kBoardTotal; ++i) {
                 if (boardSpaceRect(i).contains(canonical)) {
                     if (canBuildHere(i)) {
+                        SoundManager::instance().playDialogOpen();
                         BuildingDialog dlg(i, m_cellStates[i], this);
                         dlg.move(mapToGlobal(wp.toPoint()) + QPoint(12, 12));
-                        if (dlg.exec() == QDialog::Accepted)
+                        if (dlg.exec() == QDialog::Accepted) {
                             m_cellStates[i] = dlg.result();
+                            if (m_cellStates[i].hasAnyBuilding())
+                                SoundManager::instance().playBuildingPlaced();
+                        }
                         update();
                         emit boardChanged();
                     }
