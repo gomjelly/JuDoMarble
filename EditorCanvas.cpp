@@ -59,7 +59,10 @@ void EditorCanvas::clearAll() {
 }
 
 QTransform EditorCanvas::canvasToWidget() const {
-    return QTransform::fromScale((qreal)width() / CANVAS_W, (qreal)height() / CANVAS_H);
+    qreal scale = qMin((qreal)width() / CANVAS_W, (qreal)height() / CANVAS_H);
+    qreal ox = (width()  - CANVAS_W * scale) / 2.0;
+    qreal oy = (height() - CANVAS_H * scale) / 2.0;
+    return QTransform::fromScale(scale, scale) * QTransform::fromTranslate(ox, oy);
 }
 
 QTransform EditorCanvas::widgetToCanvas() const {
