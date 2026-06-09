@@ -3,6 +3,7 @@
 #include "SimulationWindow.h"
 #include "SoundManager.h"
 #include "GameSave.h"
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDockWidget>
 #include <QFileDialog>
@@ -46,6 +47,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     layout->addWidget(btnLoad);
 
     layout->addSpacing(12);
+    layout->addWidget(new QLabel("<b>텍스트 방향</b>"));
+    m_allDownCheck = new QCheckBox("모두 아래방향");
+    m_allDownCheck->setToolTip("체크: 모든 칸 텍스트를 같은 방향으로\n해제: 각 변 바깥쪽 방향으로");
+    layout->addWidget(m_allDownCheck);
+
+    layout->addSpacing(12);
     layout->addWidget(new QLabel("<b>출력 디스플레이</b>"));
     m_displayCombo = new QComboBox;
     layout->addWidget(m_displayCombo);
@@ -71,6 +78,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(btnStop,  &QPushButton::clicked, this, &MainWindow::onStopSimulation);
     connect(btnSave,  &QPushButton::clicked, this, &MainWindow::onSave);
     connect(btnLoad,  &QPushButton::clicked, this, &MainWindow::onLoad);
+    connect(m_allDownCheck, &QCheckBox::toggled, m_canvas, &EditorCanvas::setAllDownMode);
 
     statusBar()->showMessage("준비  |  도형을 추가하고 꼭짓점을 드래그해 편집하세요");
 }

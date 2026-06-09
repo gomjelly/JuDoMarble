@@ -22,8 +22,11 @@ public:
     static constexpr int   CANVAS_H   = 720;
     static constexpr qreal BOARD_SIZE = 630.0;
 
-    static void drawBoard(QPainter& p, const CellState* states = nullptr);
-    static void drawBuildings(QPainter& p, const CellState* states);
+    static void drawBoard(QPainter& p, const CellState* states = nullptr, bool allDown = false);
+    static void drawBuildings(QPainter& p, const CellState* states, bool allDown = false);
+
+    bool allDownMode() const { return m_allDownMode; }
+    void setAllDownMode(bool v) { m_allDownMode = v; update(); emit boardChanged(); }
 
 signals:
     void boardChanged();
@@ -46,6 +49,7 @@ private:
     CellState m_cellStates[kBoardTotal];
 
     static constexpr qreal HANDLE_R = 6.0;
+    bool m_allDownMode{ false };
 
     QTransform canvasToWidget() const;
     QTransform widgetToCanvas() const;

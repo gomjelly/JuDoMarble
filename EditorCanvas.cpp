@@ -127,8 +127,8 @@ void EditorCanvas::paintEvent(QPaintEvent*) {
         if (QTransform::quadToQuad(src, dst, boardT)) {
             p.save();
             p.setTransform(boardT);
-            drawBoard(p, m_cellStates);
-            drawBuildings(p, m_cellStates);
+            drawBoard(p, m_cellStates, m_allDownMode);
+            drawBuildings(p, m_cellStates, m_allDownMode);
             p.restore();
         }
         // Corner handles
@@ -265,213 +265,138 @@ void EditorCanvas::mouseReleaseEvent(QMouseEvent*) {
 
 namespace {
 
-// ── Special space drawings ─────────────────────────────────────────────────────
+// ── Corner cell drawing (clean 2-line style) ──────────────────────────────────
 
-static void drawStart(QPainter& p, const QRectF& r) {
-    QFont f("맑은 고딕"); f.setPixelSize(16); f.setBold(true); f.setStyleStrategy(QFont::PreferAntialias);
-    p.setFont(f);
-    p.setPen(Qt::white);
-    p.drawText(QRectF(r.left(), r.top() + 6, r.width(), r.height()*0.45),
-               Qt::AlignCenter, "출발");
-    // Arrow pointing left (first step goes left along bottom row)
-    p.setPen(QPen(QColor(255,255,100), 2));
-    qreal ay = r.center().y()+r.height()*0.18, ax1 = r.left()+8, ax2 = r.right()-8;
-    p.drawLine(QPointF(ax2, ay), QPointF(ax1, ay));
-    p.drawLine(QPointF(ax1, ay), QPointF(ax1+9, ay-7));
-    p.drawLine(QPointF(ax1, ay), QPointF(ax1+9, ay+7));
-    QFont sf("맑은 고딕"); sf.setPixelSize(10); sf.setBold(true);
-    p.setFont(sf); p.setPen(QColor(200,255,200));
-    p.drawText(QRectF(r.left(), r.bottom()-14, r.width(), 14), Qt::AlignCenter, "GO!");
-}
-
-static void drawIsland(QPainter& p, const QRectF& r) {
-    p.fillRect(QRectF(r.left(), r.top(), r.width(), r.height()*0.55), QColor(100,180,220));
-    // (sandy bottom already filled from space color)
-    // Palm trunk
-    qreal cx = r.center().x(), tbot = r.top()+r.height()*0.72, ttop = r.top()+r.height()*0.18;
-    p.setPen(QPen(QColor(139,90,43), 2.5));
-    p.drawLine(QPointF(cx, tbot), QPointF(cx+3, ttop));
-    // Leaves
-    p.setPen(QPen(QColor(30,130,30), 1.5));
-    const QPointF tips[5] = {{cx-18,ttop-10},{cx-10,ttop-18},{cx+3,ttop-20},{cx+14,ttop-15},{cx+20,ttop-5}};
-    for (const auto& t : tips) p.drawLine(QPointF(cx+3, ttop), t);
-    // Waves
-    p.setPen(QPen(QColor(70,140,200), 1));
-    qreal wy = r.top()+r.height()*0.82;
-    for (int wx = r.left()+4; wx < r.right()-10; wx += 12)
-        p.drawArc(QRectF(wx, wy, 10, 4), 0, 180*16);
-    QFont f("맑은 고딕"); f.setPixelSize(11); f.setBold(true);
-    p.setFont(f); p.setPen(Qt::black);
-    p.drawText(QRectF(r.left(), r.bottom()-15, r.width(), 15), Qt::AlignCenter, "무인도");
-}
-
-static void drawOlympics(QPainter& p, const QRectF& r) {
-    const QColor rings[5] = {{0,129,200},{252,177,49},{20,20,20},{0,157,87},{252,76,2}};
-    qreal rr = r.width() / 13.5;
-    qreal sp = rr * 2.15;
-    qreal startX = r.center().x() - sp*2;
-    qreal y1 = r.top()+r.height()*0.30, y2 = r.top()+r.height()*0.46;
-    const QPointF pos[5] = {{startX,y1},{startX+sp,y2},{startX+sp*2,y1},{startX+sp*3,y2},{startX+sp*4,y1}};
-    for (int i = 0; i < 5; ++i) {
-        p.setPen(QPen(rings[i], 2.5));
-        p.setBrush(Qt::NoBrush);
-        p.drawEllipse(pos[i], rr, rr);
-    }
-    QFont f("맑은 고딕"); f.setPixelSize(12); f.setBold(true);
-    p.setFont(f); p.setPen(Qt::black);
-    p.drawText(QRectF(r.left(), r.top()+r.height()*0.65, r.width(), r.height()*0.35),
-               Qt::AlignCenter, "올림픽");
-}
-
-static void drawWorldTravel(QPainter& p, const QRectF& r) {
-    qreal cx = r.center().x()+4, cy = r.center().y()-4, sz = r.width()*0.28;
-    // Body
-    QPainterPath body;
-    body.moveTo(cx+sz*1.4, cy+sz*0.1);
-    body.quadTo(cx, cy-sz*0.2, cx-sz*1.4, cy+sz*0.15);
-    body.lineTo(cx-sz*1.4, cy+sz*0.35);
-    body.quadTo(cx, cy+sz*0.25, cx+sz*1.4, cy+sz*0.3);
-    body.closeSubpath();
-    p.fillPath(body, QColor(210,225,255));
-    p.setPen(QPen(Qt::white, 1)); p.drawPath(body);
-    // Wings
-    QPolygonF wings;
-    wings << QPointF(cx-sz*0.1,cy+sz*0.15) << QPointF(cx-sz*0.9,cy+sz*1.1)
-          << QPointF(cx+sz*0.5,cy+sz*0.25);
-    p.setBrush(QColor(170,195,240)); p.setPen(Qt::NoPen);
-    p.drawPolygon(wings);
-    // Tail
-    QPolygonF tail;
-    tail << QPointF(cx-sz*1.0,cy+sz*0.15) << QPointF(cx-sz*1.8,cy-sz*0.55)
-         << QPointF(cx-sz*0.75,cy+sz*0.2);
-    p.drawPolygon(tail);
+static void drawCornerCell(QPainter& p, const QRectF& r, int idx, bool allDown) {
+    const auto& sp = kBoardSpaces[idx];
+    p.fillRect(r, sp.color);
+    p.setPen(QPen(QColor(40,40,40), 1.5));
     p.setBrush(Qt::NoBrush);
-    QFont f("맑은 고딕"); f.setPixelSize(10); f.setBold(true);
-    p.setFont(f); p.setPen(Qt::white);
-    p.drawText(QRectF(r.left(), r.bottom()-14, r.width(), 14), Qt::AlignCenter, "세계여행");
+    p.drawRect(r);
+
+    static const QString kEngLabels[4] = {"START", "ISLAND", "OLYMPIC", "WORLD"};
+    // 각 코너의 바깥 대각선 방향 (BR=-45, BL=+45, TL=+135, TR=-135)
+    static const int kDiagRot[4] = {-45, 45, 135, -135};
+
+    int sideIdx = idx / 8;
+    QColor fg = sp.color.lightness() < 155 ? Qt::white : QColor(40,40,40);
+    int rotDeg = allDown ? 0 : kDiagRot[sideIdx];
+
+    p.save();
+    p.setClipRect(r);
+    p.translate(r.center());
+    p.rotate(rotDeg);
+    qreal half = r.width() / 2.0; // 코너는 정사각형(90×90)
+
+    QFont nf("맑은 고딕"); nf.setPixelSize(18); nf.setBold(true);
+    nf.setStyleStrategy(QFont::PreferAntialias);
+    p.setFont(nf); p.setPen(fg);
+    p.drawText(QRectF(-half, -half*0.55, half*2, half*0.65), Qt::AlignCenter, sp.name);
+
+    QFont ef("맑은 고딕"); ef.setPixelSize(11); ef.setBold(false);
+    ef.setStyleStrategy(QFont::PreferAntialias);
+    p.setFont(ef); p.setPen(fg);
+    p.drawText(QRectF(-half, half*0.08, half*2, half*0.45), Qt::AlignCenter, kEngLabels[sideIdx]);
+
+    p.restore();
 }
 
-// local rect is already rotated so width is the "long" dimension
+// ── Non-corner cell drawing (clean text-centric style) ────────────────────────
+
 static void drawFortuneCard(QPainter& p, const QRectF& local) {
-    qreal mw = local.width()*0.1, mh = local.height()*0.12;
-    QRectF card(local.left()+mw, local.top()+mh, local.width()-2*mw, local.height()-2*mh);
-    p.fillRect(card, QColor(255,245,160));
-    p.setPen(QPen(QColor(200,140,0), 1));
-    p.drawRoundedRect(card, 3, 3);
-    p.setPen(QPen(QColor(210,155,10), 0.5));
-    p.drawRoundedRect(card.adjusted(3,3,-3,-3), 2, 2);
-    QFont sf("맑은 고딕"); sf.setPixelSize(14); sf.setBold(true);
-    p.setFont(sf); p.setPen(QColor(200,100,0));
-    p.drawText(QRectF(card.left(), card.top(), card.width(), card.height()*0.6),
+    int minDim = (int)qMin(local.width(), local.height());
+    QFont sf("맑은 고딕"); sf.setPixelSize(qMax(12, (int)(minDim*0.26)));
+    sf.setBold(true); sf.setStyleStrategy(QFont::PreferAntialias);
+    p.setFont(sf); p.setPen(QColor(180,110,0));
+    p.drawText(QRectF(local.left(), local.top(), local.width(), local.height()*0.56),
                Qt::AlignCenter, "★");
-    QFont tf("맑은 고딕"); tf.setPixelSize(9); tf.setBold(true);
-    p.setFont(tf); p.setPen(QColor(120,60,0));
-    p.drawText(QRectF(card.left(), card.top()+card.height()*0.55, card.width(), card.height()*0.45),
+    QFont tf("맑은 고딕"); tf.setPixelSize(qMax(8, (int)(minDim*0.16)));
+    tf.setBold(true); tf.setStyleStrategy(QFont::PreferAntialias);
+    p.setFont(tf); p.setPen(QColor(110,65,0));
+    p.drawText(QRectF(local.left(), local.top()+local.height()*0.52, local.width(), local.height()*0.48),
                Qt::AlignCenter, "포춘카드");
 }
 
-static void drawBonusGame(QPainter& p, const QRectF& local) {
-    qreal cx = local.center().x(), cy = local.center().y()-local.height()*0.08;
-    qreal bw = local.width()*0.48, bh = local.height()*0.38;
-    QRectF box(cx-bw/2, cy-bh/2, bw, bh);
-    QRectF lid(box.left()-2, box.top()-bh*0.28, bw+4, bh*0.28);
-    p.fillRect(box, QColor(210,60,60));
-    p.setPen(QPen(QColor(170,30,30), 1)); p.drawRect(box);
-    p.fillRect(lid, QColor(190,40,40));
-    p.drawRect(lid);
-    p.setPen(QPen(QColor(255,220,0), 2));
-    p.drawLine(QPointF(box.left(), cy), QPointF(box.right(), cy));
-    p.drawLine(QPointF(cx, lid.top()), QPointF(cx, box.bottom()));
-    p.setBrush(QColor(255,220,0)); p.setPen(Qt::NoPen);
-    p.drawEllipse(QPointF(cx-5, lid.top()+lid.height()*0.4), 4, 3);
-    p.drawEllipse(QPointF(cx+5, lid.top()+lid.height()*0.4), 4, 3);
-    p.setBrush(Qt::NoBrush);
-    QFont f("맑은 고딕"); f.setPixelSize(9); f.setBold(true);
-    p.setFont(f); p.setPen(Qt::white);
-    p.drawText(QRectF(local.left(), local.bottom()-14, local.width(), 14),
-               Qt::AlignCenter, "보너스");
-}
-
-// Paint a single non-corner space at index idx, cell rect r, rotation rotDeg
-static void paintCell(QPainter& p, const QRectF& r, int idx, int rotDeg, bool hideText = false) {
+static void paintCell(QPainter& p, const QRectF& r, int idx, int rotDeg, bool hasBuilding = false) {
     const auto& sp = kBoardSpaces[idx];
     p.fillRect(r, sp.color);
-    p.setPen(QPen(Qt::black, 1));
+    p.setPen(QPen(QColor(50,50,50), 0.8));
+    p.setBrush(Qt::NoBrush);
     p.drawRect(r);
+
+    if (hasBuilding) return; // 건물 있으면 텍스트 생략
 
     p.save();
     p.translate(r.center());
     p.rotate(rotDeg);
-    // Local dimensions after rotation
     bool is90 = (rotDeg == 90 || rotDeg == -90);
-    QRectF local(-( is90 ? r.height() : r.width())/2,
-                 -( is90 ? r.width()  : r.height())/2,
-                   is90 ? r.height()  : r.width(),
-                   is90 ? r.width()   : r.height());
+    QRectF local(-(is90 ? r.height() : r.width())/2,
+                 -(is90 ? r.width()  : r.height())/2,
+                   is90 ? r.height() : r.width(),
+                   is90 ? r.width()  : r.height());
 
     if (sp.type == SpaceType::FortuneCard) {
         drawFortuneCard(p, local);
-    } else if (sp.type == SpaceType::Bonus) {
-        drawBonusGame(p, local);
     } else {
-        if (!hideText) {
-            QColor fg = sp.color.lightness() < 140 ? Qt::white : Qt::black;
-            QFont f("맑은 고딕"); f.setPixelSize(12); f.setBold(true);
-            p.setFont(f); p.setPen(fg);
-            p.drawText(local.adjusted(1,1,-1,-1), Qt::AlignCenter | Qt::TextWordWrap, sp.name);
-        }
+        QColor fg = sp.color.lightness() < 155 ? Qt::white : QColor(30,30,30);
+        int fs = qMin(14, qMax(9, (int)(qMin(local.width(), local.height()) * 0.22)));
+        QFont f("맑은 고딕"); f.setPixelSize(fs); f.setBold(true);
+        f.setStyleStrategy(QFont::PreferAntialias);
+        p.setFont(f); p.setPen(fg);
+        // 보너스게임은 두 줄로 표시
+        QString displayName = sp.name;
+        if (displayName == "보너스게임") displayName = "보너스\n게임";
+        p.drawText(local.adjusted(2,2,-2,-2), Qt::AlignCenter | Qt::TextWordWrap, displayName);
     }
     p.restore();
 }
 
 } // namespace
 
-void EditorCanvas::drawBoard(QPainter& p, const CellState* states) {
+void EditorCanvas::drawBoard(QPainter& p, const CellState* states, bool allDown) {
     p.setRenderHint(QPainter::Antialiasing);
 
     const qreal bs = kBoardSize, cs = kCornerSize;
 
-    // Board background
-    p.fillRect(QRectF(0, 0, bs, bs), QColor(245,245,220));
+    // Board background (clean off-white)
+    p.fillRect(QRectF(0, 0, bs, bs), QColor(252,250,245));
 
-    // Center felt
+    // Center circle
     QRectF center(cs, cs, bs-2*cs, bs-2*cs);
-    p.fillRect(center, QColor(34,100,34));
+    QPointF ctr = center.center();
+    qreal radius = qMin(center.width(), center.height()) * 0.47;
+    p.setBrush(QColor(100,160,225));
+    p.setPen(Qt::NoPen);
+    p.drawEllipse(ctr, radius, radius);
     {
-        QFont f("맑은 고딕"); f.setPixelSize(65); f.setBold(true); f.setStyleStrategy(QFont::PreferAntialias);
-        p.setFont(f); p.setPen(QColor(255,220,50));
-        p.drawText(center, Qt::AlignCenter, "모두의\n마블");
+        QFont f("맑은 고딕"); f.setPixelSize(62); f.setBold(true);
+        f.setStyleStrategy(QFont::PreferAntialias);
+        p.setFont(f); p.setPen(Qt::white);
+        p.drawText(QRectF(ctr.x()-radius, ctr.y()-radius*0.9, radius*2, radius*1.1),
+                   Qt::AlignCenter, "MARBLE");
+        QFont sf("맑은 고딕"); sf.setPixelSize(20); sf.setBold(false);
+        sf.setStyleStrategy(QFont::PreferAntialias);
+        p.setFont(sf);
+        p.drawText(QRectF(ctr.x()-radius, ctr.y()+radius*0.1, radius*2, radius*0.5),
+                   Qt::AlignCenter, "주사위를 굴려라!");
     }
 
-    // Rotation per side: 0=bottom(0), 1=left(90), 2=top(180), 3=right(-90)
+    // Rotation per side (outward mode): side0=bottom(0), side1=left(90), side2=top(180), side3=right(-90)
     const int kRot[4] = {0, 90, 180, -90};
 
     for (int i = 0; i < kBoardTotal; ++i) {
         QRectF r = boardSpaceRect(i);
         if (i % 8 == 0) {
-            // Corner: fill background, then draw content rotated 45° toward outside diagonal
-            // BR=-45  BL=+45  TL=+135  TR=-135
-            const int cornerRot[4] = {-45, 45, 135, -135};
-            p.fillRect(r, kBoardSpaces[i].color);
-            p.save();
-            p.setClipRect(r);
-            p.translate(r.center()); p.rotate(cornerRot[i / 8]); p.translate(-r.center());
-            p.setPen(QPen(Qt::black, 1)); p.drawRect(r);
-            switch (i) {
-                case  0: drawStart(p, r);       break;
-                case  8: drawIsland(p, r);      break;
-                case 16: drawOlympics(p, r);    break;
-                case 24: drawWorldTravel(p, r); break;
-            }
-            p.restore();
+            drawCornerCell(p, r, i, allDown);
         } else {
+            int rot = allDown ? 0 : kRot[i / 8];
             bool hasBuilding = states && states[i].hasAnyBuilding() && states[i].playerColor >= 0;
-            paintCell(p, r, i, kRot[i / 8], hasBuilding);
+            paintCell(p, r, i, rot, hasBuilding);
         }
     }
 
     // Outer border
-    p.setPen(QPen(Qt::black, 2));
+    p.setPen(QPen(QColor(30,30,30), 2));
     p.setBrush(Qt::NoBrush);
     p.drawRect(QRectF(0, 0, bs, bs));
 }
@@ -584,7 +509,9 @@ static void drawLandmarkIcon(QPainter& p, qreal cx, qreal cy, qreal s, int space
     if (spaceIdx >= 0 && spaceIdx < 32) {
         int sc = kLandmarkSprite[spaceIdx][0], sr = kLandmarkSprite[spaceIdx][1];
         if (sc >= 0) {
-            QRectF dst(cx - s * 1.1, cy - s * 1.1, s * 2.2, s * 2.2);
+            // 퀘벡(13) 랜드마크는 스프라이트가 오른쪽으로 치우쳐 있어 왼쪽 보정
+            qreal offsetX = (spaceIdx == 13) ? -s * 0.35 : 0.0;
+            QRectF dst(cx + offsetX - s * 1.1, cy - s * 1.1, s * 2.2, s * 2.2);
             drawSprite(p, sc, sr, dst, playerColor);
             return;
         }
@@ -871,7 +798,7 @@ static void paintBuildingIcon(QPainter& p, const QRectF& local, int buildingIdx,
 
     if (hasSheet) {
         if (buildingIdx == 4) {
-            qreal ls = qMin(local.width(), local.height()) * 0.58;
+            qreal ls = qMin(local.width(), local.height()) * 0.50;
             drawLandmarkIcon(p, 0, -local.height() * 0.05, ls, spaceIdx, col, playerColor);
             return;
         }
@@ -923,7 +850,7 @@ static void paintBuildingIcon(QPainter& p, const QRectF& local, int buildingIdx,
         break;
     }
     case 4: {
-        qreal ls = qMin(local.width(), local.height()) * 0.46;
+        qreal ls = qMin(local.width(), local.height()) * 0.40;
         drawLandmarkIcon(p, cx, cy, ls, spaceIdx, col);
         break;
     }
@@ -932,7 +859,7 @@ static void paintBuildingIcon(QPainter& p, const QRectF& local, int buildingIdx,
 
 } // namespace
 
-void EditorCanvas::drawBuildings(QPainter& p, const CellState* states) {
+void EditorCanvas::drawBuildings(QPainter& p, const CellState* states, bool allDown) {
     if (!states) return;
     p.setRenderHint(QPainter::Antialiasing);
 
@@ -950,7 +877,7 @@ void EditorCanvas::drawBuildings(QPainter& p, const CellState* states) {
         if (active.isEmpty()) continue;
 
         QRectF r = boardSpaceRect(i);
-        int rot = (i % 8 == 0) ? cornerRot[i / 8] : kRot[i / 8];
+        int rot = (i % 8 == 0) ? cornerRot[i / 8] : (allDown ? 0 : kRot[i / 8]);
 
         p.save();
         p.translate(r.center());
@@ -988,20 +915,23 @@ void EditorCanvas::drawBuildings(QPainter& p, const CellState* states) {
             p.restore();
         }
 
-        // 이름 오버레이 — 건물 위에 항상 표시
+        // 하단 도시명 배지
         if (i % 8 != 0) {
             const QString& name = kBoardSpaces[i].name;
-            int fs = qMax(9, (int)(qMin(local.width(), local.height()) * 0.22));
+            const QColor& cellColor = kBoardSpaces[i].color;
+            int fs = qMax(8, qMin(13, (int)(qMin(local.width(), local.height()) * 0.20)));
             QFont nf("맑은 고딕"); nf.setPixelSize(fs); nf.setBold(true);
+            nf.setStyleStrategy(QFont::PreferAntialias);
             p.setFont(nf);
             QFontMetrics fm(nf);
-            int tw = fm.horizontalAdvance(name);
-            int th = fm.height();
+            qreal tw = fm.horizontalAdvance(name);
+            qreal th = fm.height();
             qreal nx = -tw * 0.5;
-            qreal ny = local.bottom() - th - 3;
-            QColor bg = col; bg.setAlpha(200);
-            p.fillRect(QRectF(nx - 2, ny - 1, tw + 4, th + 2), bg);
-            p.setPen(col.lightness() < 140 ? Qt::white : Qt::black);
+            qreal ny = local.bottom() - th - 2;
+            QColor bg = cellColor; bg.setAlpha(230);
+            p.setBrush(bg); p.setPen(Qt::NoPen);
+            p.drawRoundedRect(QRectF(nx - 4, ny - 1, tw + 8, th + 2), 3, 3);
+            p.setPen(cellColor.lightness() < 155 ? Qt::white : QColor(30,30,30));
             p.drawText(QPointF(nx, ny + fm.ascent()), name);
         }
 

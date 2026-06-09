@@ -40,8 +40,8 @@ void SimulationWindow::paintEvent(QPaintEvent*) {
         if (QTransform::quadToQuad(src, dst, boardT)) {
             p.save();
             p.setTransform(boardT);
-            EditorCanvas::drawBoard(p, m_canvas->cellStates());
-            EditorCanvas::drawBuildings(p, m_canvas->cellStates());
+            EditorCanvas::drawBoard(p, m_canvas->cellStates(), m_canvas->allDownMode());
+            EditorCanvas::drawBuildings(p, m_canvas->cellStates(), m_canvas->allDownMode());
             p.restore();
         }
     }

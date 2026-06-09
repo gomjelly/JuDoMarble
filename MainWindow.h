@@ -3,6 +3,7 @@
 
 class EditorCanvas;
 class QComboBox;
+class QCheckBox;
 class SimulationWindow;
 
 class MainWindow : public QMainWindow {
@@ -21,6 +22,7 @@ private slots:
 private:
     EditorCanvas* m_canvas{ nullptr };
     QComboBox* m_displayCombo{ nullptr };
+    QCheckBox* m_allDownCheck{ nullptr };
     SimulationWindow* m_simWindow{ nullptr };
 
     void populateDisplayList();
