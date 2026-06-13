@@ -95,6 +95,7 @@
     <ClCompile Include="BuildingDialog.cpp" />
     <ClCompile Include="EditorCanvas.cpp" />
     <ClCompile Include="GameSave.cpp" />
+    <ClCompile Include="PlayerSelectDialog.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
@@ -112,8 +113,10 @@
   <ItemGroup>
     <ClInclude Include="BoardData.h" />
     <ClInclude Include="GameSave.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="PolygonItem.h" />
     <QtMoc Include="BuildingDialog.h" />
+    <QtMoc Include="PlayerSelectDialog.h" />
     <QtMoc Include="SoundManager.h" />
     <QtMoc Include="SimulationWindow.h" />
   </ItemGroup>

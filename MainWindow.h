@@ -1,5 +1,6 @@
 #pragma once
 #include <QMainWindow>
+#include "GameState.h"
 
 class EditorCanvas;
 class QComboBox;
@@ -18,12 +19,15 @@ private slots:
     void onStopSimulation();
     void onSave();
     void onLoad();
+    void onStartGame();
 
 private:
-    EditorCanvas* m_canvas{ nullptr };
-    QComboBox* m_displayCombo{ nullptr };
-    QCheckBox* m_allDownCheck{ nullptr };
+    EditorCanvas*    m_canvas{ nullptr };
+    QComboBox*       m_displayCombo{ nullptr };
+    QCheckBox*       m_allDownCheck{ nullptr };
     SimulationWindow* m_simWindow{ nullptr };
+    GameState        m_gameState;
 
     void populateDisplayList();
+    void setupGameState(QVector<PlayerInfo> players);
 };

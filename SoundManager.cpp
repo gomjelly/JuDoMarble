@@ -79,3 +79,43 @@ void SoundManager::playSimulationStart() {
     pcm += makeTone(1046.50f, 0.32f, 0.6f, 0.004f, 0.22f);
     play(pcm);
 }
+
+void SoundManager::playGameStart() {
+    // 화려한 게임 시작 팡파레: 빠른 상승 아르페지오 + 긴 마무리
+    QByteArray pcm;
+    pcm += makeTone( 392.00f, 0.07f, 0.5f, 0.002f, 0.03f);
+    pcm += makeTone( 523.25f, 0.07f, 0.5f, 0.002f, 0.03f);
+    pcm += makeTone( 659.25f, 0.07f, 0.5f, 0.002f, 0.03f);
+    pcm += makeTone( 783.99f, 0.07f, 0.5f, 0.002f, 0.03f);
+    pcm += makeTone( 987.77f, 0.07f, 0.6f, 0.002f, 0.03f);
+    pcm += makeTone(1046.50f, 0.07f, 0.7f, 0.002f, 0.03f);
+    pcm += makeTone(1318.51f, 0.45f, 0.7f, 0.004f, 0.35f);
+    play(pcm);
+}
+
+void SoundManager::playRevealItem() {
+    // 짧은 "핑" - 아이템 공개
+    QByteArray pcm;
+    pcm += makeTone(880.00f, 0.06f, 0.4f, 0.002f, 0.04f);
+    pcm += makeTone(1174.66f, 0.18f, 0.5f, 0.002f, 0.15f);
+    play(pcm);
+}
+
+void SoundManager::playFestivalReveal() {
+    // 축제 도시 선정: 밝고 경쾌한 멜로디
+    QByteArray pcm;
+    pcm += makeTone( 659.25f, 0.08f, 0.55f, 0.003f, 0.04f);
+    pcm += makeTone( 783.99f, 0.08f, 0.55f, 0.003f, 0.04f);
+    pcm += makeTone( 987.77f, 0.08f, 0.55f, 0.003f, 0.04f);
+    pcm += makeTone(1318.51f, 0.08f, 0.60f, 0.003f, 0.04f);
+    pcm += makeTone(1567.98f, 0.35f, 0.65f, 0.003f, 0.28f);
+    play(pcm);
+}
+
+void SoundManager::playPlayerTurn() {
+    // 플레이어 차례 알림: 경쾌한 2음
+    QByteArray pcm;
+    pcm += makeTone(783.99f, 0.10f, 0.5f, 0.003f, 0.05f);
+    pcm += makeTone(987.77f, 0.22f, 0.6f, 0.003f, 0.16f);
+    play(pcm);
+}

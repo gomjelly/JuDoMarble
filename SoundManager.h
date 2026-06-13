@@ -13,6 +13,11 @@ public:
     void playBuildingPlaced();
     void playSimulationStart();
 
+    void playGameStart();
+    void playRevealItem();
+    void playFestivalReveal();
+    void playPlayerTurn();
+
 private:
     explicit SoundManager(QObject* parent = nullptr);
 
